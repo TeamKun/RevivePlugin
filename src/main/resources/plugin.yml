@@ -1,0 +1,5 @@
+name: RevivePlugin
+version: @version@
+main: net.kunmc.lab.reviveplugin.RevivePlugin
+api-version: 1.15
+authors: [ Yu_212 ]

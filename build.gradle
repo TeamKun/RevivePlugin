@@ -27,6 +27,7 @@ repositories {
 
 dependencies {
     compileOnly 'com.destroystokyo.paper:paper-api:1.15.2-R0.1-SNAPSHOT'
+    compileOnly 'org.spigotmc:spigot:1.15.2-R0.1-SNAPSHOT'
     compileOnly group: 'com.comphenix.protocol', name: 'ProtocolLib', version: '4.5.1';
     compile group: 'org.jetbrains', name: 'annotations', version: '20.1.0'
 }

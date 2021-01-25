@@ -26,7 +26,8 @@ public class RespawnListener extends PacketAdapter implements Listener {
     @Override
     public void onPacketReceiving(PacketEvent event) {
         EnumWrappers.ClientCommand clientCommand = event.getPacket().getClientCommands().read(0);
-        if (!unrespawnablePlayers.contains(event.getPlayer())) {
+        ConfigManager configManager = RevivePlugin.getInstance().getConfigManager();
+        if (configManager.canSelfRespawn() && !unrespawnablePlayers.contains(event.getPlayer())) {
             return;
         }
         if (clientCommand == EnumWrappers.ClientCommand.PERFORM_RESPAWN) {
@@ -34,6 +35,10 @@ public class RespawnListener extends PacketAdapter implements Listener {
             PlayerConnection connection = player.playerConnection;
             event.setCancelled(true);
             connection.sendPacket(new PacketPlayOutCombatEvent(new CombatTracker(player), PacketPlayOutCombatEvent.EnumCombatEventType.ENTITY_DIED));
+            DeadPlayer deadPlayer = DeadPlayer.getDeadPlayers().get(event.getPlayer());
+            if (configManager.canAskForHelp()) {
+                deadPlayer.askForHelp();
+            }
         }
     }
 

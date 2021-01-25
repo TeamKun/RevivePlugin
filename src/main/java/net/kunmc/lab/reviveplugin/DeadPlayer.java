@@ -42,9 +42,9 @@ public class DeadPlayer {
         EnumDirection direction = EnumDirection.fromAngle(source.getLocation().getYaw());
         this.deadPlayer = new EntityPlayer(server, world, new GameProfile(source.getUniqueId(), source.getName()), new PlayerInteractManager(world));
         this.deadPlayer.setLocation(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
-        this.bedLocation = new Location(location.getWorld(), location.getX(), 0, location.getZ());
+        this.bedLocation = new Location(location.getWorld(), location.getX(), 1, location.getZ());
         this.blockDataCache = bedLocation.getBlock().getBlockData();
-        this.blockPos = new BlockPosition(location.getX(), 0, location.getZ());
+        this.blockPos = new BlockPosition(location.getX(), 1, location.getZ());
         IBlockAccess fakeBed = new IBlockAccess() {
             @Override
             public TileEntity getTileEntity(BlockPosition blockPosition) {
@@ -108,6 +108,10 @@ public class DeadPlayer {
         if (remainReviveCount == 0) {
             source.spigot().respawn();
         }
+    }
+
+    public void askForHelp() {
+
     }
 
     private void spawnToPlayer(Player player) {

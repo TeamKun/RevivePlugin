@@ -15,4 +15,12 @@ public class ConfigManager {
     public int getReviveCount() {
         return 5;
     }
+
+    public boolean canSelfRespawn() {
+        return true;
+    }
+
+    public boolean canAskForHelp() {
+        return true;
+    }
 }

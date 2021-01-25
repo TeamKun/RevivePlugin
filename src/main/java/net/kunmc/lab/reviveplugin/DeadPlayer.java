@@ -11,12 +11,10 @@ import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public class DeadPlayer {
-    private static final Set<DeadPlayer> DEAD_PLAYERS = new HashSet<>();
+    private static final Map<Player, DeadPlayer> deadPlayers = new HashMap<>();
     private static BukkitTask task;
     private final Player source;
     private final EntityPlayer deadPlayer;
@@ -26,8 +24,11 @@ public class DeadPlayer {
     private final BlockPosition blockPos;
     private final PacketPlayOutBlockChange fakeBedPacket;
     private PacketPlayOutEntityMetadata metadataPacket;
+    private int remainReviveCount;
 
     public DeadPlayer(Player source) {
+        ConfigManager configManager = RevivePlugin.getInstance().getConfigManager();
+        this.remainReviveCount = configManager.getReviveCount();
         this.source = source;
         this.trackers = new HashSet<>();
         for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
@@ -77,23 +78,35 @@ public class DeadPlayer {
         for (Player player : trackers) {
             spawnToPlayer(player);
         }
-        if (DEAD_PLAYERS.isEmpty()) {
+        if (deadPlayers.isEmpty()) {
             task = Bukkit.getScheduler().runTaskTimer(RevivePlugin.getInstance(), () -> {
-                for (DeadPlayer deadPlayer : DEAD_PLAYERS) {
+                for (DeadPlayer deadPlayer : deadPlayers.values()) {
                     deadPlayer.tick();
                 }
             }, 0, 1);
         }
-        DEAD_PLAYERS.add(this);
+        deadPlayers.put(source, this);
     }
 
     public void remove() {
         for (Player player : trackers) {
             removeToPlayer(player);
         }
-        DEAD_PLAYERS.remove(this);
-        if (DEAD_PLAYERS.isEmpty()) {
+        deadPlayers.remove(source);
+        if (deadPlayers.isEmpty()) {
             Bukkit.getScheduler().cancelTask(task.getTaskId());
+        }
+    }
+
+    public Location getLocation() {
+        Vec3D vector = deadPlayer.getPositionVector();
+        return new Location(deadPlayer.world.getWorld(), vector.getX(), vector.getY(), vector.getZ());
+    }
+
+    public void tryRevive() {
+        remainReviveCount--;
+        if (remainReviveCount == 0) {
+            source.spigot().respawn();
         }
     }
 
@@ -132,5 +145,9 @@ public class DeadPlayer {
             PlayerConnection connection = ((CraftPlayer)player).getHandle().playerConnection;
             connection.sendPacket(fakeBedPacket);
         }
+    }
+
+    public static Map<Player, DeadPlayer> getDeadPlayers() {
+        return deadPlayers;
     }
 }

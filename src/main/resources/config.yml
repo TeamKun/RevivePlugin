@@ -1,0 +1,6 @@
+respawnTime: 5
+reviveDistance: 2
+reviveCount: 5
+selfRespawn: true
+askForHelp: true
+

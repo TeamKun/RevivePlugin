@@ -1,9 +1,12 @@
-package net.kunmc.lab.reviveplugin;
+package net.kunmc.lab.reviveplugin.listener;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.EnumWrappers;
+import net.kunmc.lab.reviveplugin.DeadPlayer;
+import net.kunmc.lab.reviveplugin.RevivePlugin;
+import net.kunmc.lab.reviveplugin.config.ConfigManager;
 import net.minecraft.server.v1_15_R1.*;
 import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
@@ -47,7 +50,7 @@ public class RespawnListener extends PacketAdapter implements Listener {
         Player player = event.getEntity();
         ConfigManager configManager = RevivePlugin.getInstance().getConfigManager();
         EntityPlayer entityPlayer = ((CraftPlayer)player).getHandle();
-        AtomicInteger counter = new AtomicInteger(configManager.getRespawnDuration());
+        AtomicInteger counter = new AtomicInteger(configManager.getRespawnTime());
         setScore(entityPlayer, counter.getAndDecrement());
         unrespawnablePlayers.add(player);
         new BukkitRunnable() {

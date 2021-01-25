@@ -1,5 +1,8 @@
-package net.kunmc.lab.reviveplugin;
+package net.kunmc.lab.reviveplugin.listener;
 
+import net.kunmc.lab.reviveplugin.DeadPlayer;
+import net.kunmc.lab.reviveplugin.RevivePlugin;
+import net.kunmc.lab.reviveplugin.config.ConfigManager;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

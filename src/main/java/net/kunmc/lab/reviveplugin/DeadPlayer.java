@@ -1,6 +1,7 @@
 package net.kunmc.lab.reviveplugin;
 
 import com.mojang.authlib.GameProfile;
+import net.kunmc.lab.reviveplugin.config.ConfigManager;
 import net.minecraft.server.v1_15_R1.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

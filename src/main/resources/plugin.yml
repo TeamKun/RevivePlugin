@@ -5,5 +5,9 @@ api-version: 1.15
 authors: [ Yu_212 ]
 commands:
   reviveconfig:
+    description: Revive Pluginのコンフィグ設定コマンドです
     usage: /reviveconfig <set|reload> <value>
+    permission: revive.configcommand
+permissions:
+  revive.configcommand:
 depend: [ "ProtocolLib" ]

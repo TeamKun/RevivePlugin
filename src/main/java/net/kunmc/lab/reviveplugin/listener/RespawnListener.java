@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashSet;
@@ -46,8 +47,20 @@ public class RespawnListener extends PacketAdapter implements Listener {
     }
 
     @EventHandler
-    public void onPlayerDeath(PlayerDeathEvent event) {
+    public void onDeath(PlayerDeathEvent event) {
         Player player = event.getEntity();
+        startRespawnTimer(player);
+    }
+
+    @EventHandler
+    public void onJoin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
+        if (player.isDead()) {
+            startRespawnTimer(player);
+        }
+    }
+
+    private void startRespawnTimer(Player player) {
         ConfigManager configManager = RevivePlugin.getInstance().getConfigManager();
         EntityPlayer entityPlayer = ((CraftPlayer)player).getHandle();
         AtomicInteger counter = new AtomicInteger(configManager.getRespawnTime());

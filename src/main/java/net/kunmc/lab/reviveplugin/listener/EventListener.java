@@ -33,6 +33,7 @@ public class EventListener implements Listener {
     @EventHandler
     public void onRespawn(PlayerRespawnEvent event) {
         DeadPlayer deadPlayer = DeadPlayer.getDeadPlayers().get(event.getPlayer());
+        event.setRespawnLocation(deadPlayer.getLocation());
         deadPlayer.remove();
     }
 

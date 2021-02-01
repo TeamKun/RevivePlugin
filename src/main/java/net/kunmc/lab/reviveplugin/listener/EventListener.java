@@ -67,6 +67,6 @@ public class EventListener implements Listener {
         if (reviveTarget == null || minDistance > reviveDistance) {
             return;
         }
-        reviveTarget.tryRevive();
+        reviveTarget.tryRevive(eventPlayer);
     }
 }

@@ -7,10 +7,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.craftbukkit.v1_15_R1.CraftServer;
 import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
@@ -30,12 +34,18 @@ public class DeadPlayer {
     private final BlockPosition blockPos;
     private final PacketPlayOutBlockChange fakeBedPacket;
     private PacketPlayOutEntityMetadata metadataPacket;
-    private int remainReviveCount;
+    private int currentReviveCount;
+    private int requireReviveCount;
+    private BossBar bossBar;
+    private Map<Player, BukkitTask> bossBarHideTaskMap = new HashMap<>();
 
     public DeadPlayer(Player source) {
         ConfigManager configManager = RevivePlugin.getInstance().getConfigManager();
-        this.remainReviveCount = configManager.getReviveCount();
+        this.requireReviveCount = configManager.getReviveCount();
+        this.currentReviveCount = 0;
         this.source = source;
+        String title = source.getName() + "の蘇生";
+        this.bossBar = Bukkit.createBossBar(title, BarColor.GREEN, BarStyle.SOLID);
         this.trackers = new HashSet<>();
         for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
             if (source.getWorld().equals(onlinePlayer.getWorld())) {
@@ -102,6 +112,11 @@ public class DeadPlayer {
         if (deadPlayers.isEmpty()) {
             Bukkit.getScheduler().cancelTask(task.getTaskId());
         }
+        for (Map.Entry<Player, BukkitTask> entry : bossBarHideTaskMap.entrySet()) {
+            bossBar.removePlayer(entry.getKey());
+            entry.getValue().cancel();
+        }
+        bossBarHideTaskMap.clear();
     }
 
     public Location getLocation() {
@@ -109,11 +124,29 @@ public class DeadPlayer {
         return new Location(deadPlayer.world.getWorld(), vector.getX(), vector.getY(), vector.getZ());
     }
 
-    public void tryRevive() {
-        remainReviveCount--;
-        if (remainReviveCount == 0) {
+    public void tryRevive(Player player) {
+        updateBossBar(player);
+        currentReviveCount++;
+        bossBar.setProgress((double)currentReviveCount / requireReviveCount);
+        if (currentReviveCount >= requireReviveCount) {
             source.spigot().respawn();
         }
+    }
+
+    private void updateBossBar(Player player) {
+        bossBar.addPlayer(player);
+        if (bossBarHideTaskMap.containsKey(player)) {
+            bossBarHideTaskMap.remove(player).cancel();
+        }
+        BukkitTask task = new BukkitRunnable() {
+            @Override
+            public void run() {
+                bossBar.removePlayer(player);
+                bossBarHideTaskMap.remove(player);
+                cancel();
+            }
+        }.runTaskLater(RevivePlugin.getInstance(), 20);
+        bossBarHideTaskMap.put(player, task);
     }
 
     public void askForHelp() {

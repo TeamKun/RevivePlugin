@@ -35,9 +35,9 @@ public class DeadPlayer {
     private final PacketPlayOutBlockChange fakeBedPacket;
     private PacketPlayOutEntityMetadata metadataPacket;
     private int currentReviveCount;
-    private int requireReviveCount;
-    private BossBar bossBar;
-    private Map<Player, BukkitTask> bossBarHideTaskMap = new HashMap<>();
+    private final int requireReviveCount;
+    private final BossBar bossBar;
+    private final Map<Player, BukkitTask> bossBarHideTaskMap = new HashMap<>();
 
     public DeadPlayer(Player source) {
         ConfigManager configManager = RevivePlugin.getInstance().getConfigManager();
@@ -46,6 +46,7 @@ public class DeadPlayer {
         this.source = source;
         String title = source.getName() + "の蘇生";
         this.bossBar = Bukkit.createBossBar(title, BarColor.GREEN, BarStyle.SOLID);
+        bossBar.setProgress(0);
         this.trackers = new HashSet<>();
         for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
             if (source.getWorld().equals(onlinePlayer.getWorld())) {
@@ -134,7 +135,10 @@ public class DeadPlayer {
     }
 
     private void updateBossBar(Player player) {
-        bossBar.addPlayer(player);
+        int bossBarDisplayTime = RevivePlugin.getInstance().getConfigManager().getBossBarDisplayTime();
+        if (!bossBar.getPlayers().contains(player)) {
+            bossBar.addPlayer(player);
+        }
         if (bossBarHideTaskMap.containsKey(player)) {
             bossBarHideTaskMap.remove(player).cancel();
         }
@@ -145,7 +149,7 @@ public class DeadPlayer {
                 bossBarHideTaskMap.remove(player);
                 cancel();
             }
-        }.runTaskLater(RevivePlugin.getInstance(), 20);
+        }.runTaskLater(RevivePlugin.getInstance(), bossBarDisplayTime);
         bossBarHideTaskMap.put(player, task);
     }
 

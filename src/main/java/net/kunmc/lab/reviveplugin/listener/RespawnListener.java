@@ -16,12 +16,15 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.time.Instant;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RespawnListener extends PacketAdapter implements Listener {
-    private final Set<Player> unrespawnablePlayers = new HashSet<>();
+    private final Map<Player, Long> unrespawnablePlayers = new HashMap<>();
 
     public RespawnListener() {
         super(RevivePlugin.getInstance(), PacketType.Play.Client.CLIENT_COMMAND);
@@ -29,17 +32,21 @@ public class RespawnListener extends PacketAdapter implements Listener {
 
     @Override
     public void onPacketReceiving(PacketEvent event) {
+        Player eventPlayer = event.getPlayer();
         EnumWrappers.ClientCommand clientCommand = event.getPacket().getClientCommands().read(0);
         ConfigManager configManager = RevivePlugin.getInstance().getConfigManager();
-        if (configManager.canSelfRespawn() && !unrespawnablePlayers.contains(event.getPlayer())) {
+        if (configManager.canSelfRespawn() && !unrespawnablePlayers.containsKey(eventPlayer)) {
             return;
         }
+        long epoch = unrespawnablePlayers.get(eventPlayer);
+        long remainingTime = Math.max(0, epoch - Instant.now().getEpochSecond());
         if (clientCommand == EnumWrappers.ClientCommand.PERFORM_RESPAWN) {
-            EntityPlayer player = ((CraftPlayer)event.getPlayer()).getHandle();
+            EntityPlayer player = ((CraftPlayer)eventPlayer).getHandle();
             PlayerConnection connection = player.playerConnection;
             event.setCancelled(true);
             connection.sendPacket(new PacketPlayOutCombatEvent(new CombatTracker(player), PacketPlayOutCombatEvent.EnumCombatEventType.ENTITY_DIED));
-            DeadPlayer deadPlayer = DeadPlayer.getDeadPlayers().get(event.getPlayer());
+            DeadPlayer deadPlayer = DeadPlayer.getDeadPlayers().get(eventPlayer);
+            eventPlayer.sendMessage("リスポーン可能まであと" + remainingTime + "秒");
             if (configManager.canAskForHelp()) {
                 deadPlayer.askForHelp();
             }
@@ -63,9 +70,10 @@ public class RespawnListener extends PacketAdapter implements Listener {
     private void startRespawnTimer(Player player) {
         ConfigManager configManager = RevivePlugin.getInstance().getConfigManager();
         EntityPlayer entityPlayer = ((CraftPlayer)player).getHandle();
-        AtomicInteger counter = new AtomicInteger(configManager.getRespawnTime());
+        int respawnTime = configManager.getRespawnTime();
+        AtomicInteger counter = new AtomicInteger(respawnTime);
         setScore(entityPlayer, counter.getAndDecrement());
-        unrespawnablePlayers.add(player);
+        unrespawnablePlayers.put(player, Instant.now().getEpochSecond() + respawnTime);
         new BukkitRunnable() {
             @Override
             public void run() {

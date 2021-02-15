@@ -3,7 +3,10 @@ package net.kunmc.lab.reviveplugin.listener;
 import net.kunmc.lab.reviveplugin.DeadPlayer;
 import net.kunmc.lab.reviveplugin.RevivePlugin;
 import net.kunmc.lab.reviveplugin.config.ConfigManager;
+import net.minecraft.server.v1_15_R1.EntityPlayer;
+import net.minecraft.server.v1_15_R1.World;
 import org.bukkit.Location;
+import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -38,7 +41,7 @@ public class EventListener implements Listener {
     }
 
     @EventHandler
-    public void onJoin(PlayerQuitEvent event) {
+    public void onQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
         if (player.isDead()) {
             DeadPlayer deadPlayer = DeadPlayer.getDeadPlayers().get(event.getPlayer());

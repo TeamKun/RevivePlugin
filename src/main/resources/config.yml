@@ -3,4 +3,5 @@ reviveDistance: 2
 reviveCount: 5
 selfRespawn: true
 askForHelp: true
+bossBarDisplayTime: 40
 

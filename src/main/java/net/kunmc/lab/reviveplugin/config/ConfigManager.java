@@ -17,10 +17,11 @@ public class ConfigManager {
         put("reviveCount", new IntParser(1, Integer.MAX_VALUE));
         put("selfRespawn", new BooleanParser());
         put("askForHelp", new BooleanParser());
+        put("bossBarDisplayTime", new IntParser(1, Integer.MAX_VALUE));
     }};
 
-    public static Set<String> getConfigPaths() {
-        return CONFIGS.keySet();
+    public static String[] getConfigPaths() {
+        return CONFIGS.keySet().toArray(new String[0]);
     }
 
     public void load() {
@@ -64,5 +65,9 @@ public class ConfigManager {
 
     public boolean canAskForHelp() {
         return config.getBoolean("askForHelp");
+    }
+
+    public int getBossBarDisplayTime() {
+        return config.getInt("bossBarDisplayTime");
     }
 }

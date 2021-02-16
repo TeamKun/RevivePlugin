@@ -3,18 +3,22 @@ package net.kunmc.lab.reviveplugin;
 import com.mojang.authlib.GameProfile;
 import net.kunmc.lab.reviveplugin.config.ConfigManager;
 import net.minecraft.server.v1_15_R1.*;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.OfflinePlayer;
+import org.bukkit.*;
+import org.bukkit.World;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.craftbukkit.v1_15_R1.CraftServer;
 import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_15_R1.entity.CraftFirework;
 import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
@@ -123,6 +127,33 @@ public class DeadPlayer {
     public Location getLocation() {
         Vec3D vector = deadPlayer.getPositionVector();
         return new Location(deadPlayer.world.getWorld(), vector.getX(), vector.getY(), vector.getZ());
+    }
+
+    public void playReviveEffect(Location location) {
+        World world = location.getWorld();
+        BukkitScheduler scheduler = Bukkit.getScheduler();
+        scheduler.runTaskLater(RevivePlugin.getInstance(), () -> {
+            Firework firework = (Firework)world.spawnEntity(location, EntityType.FIREWORK);
+            FireworkMeta meta = firework.getFireworkMeta();
+            meta.addEffect(FireworkEffect.builder().with(FireworkEffect.Type.BURST).withColor(Color.WHITE).build());
+            firework.setFireworkMeta(meta);
+            ((CraftFirework)firework).getHandle().expectedLifespan = 1;
+        }, 0);
+        scheduler.runTaskLater(RevivePlugin.getInstance(), () -> world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 10, (float)Math.pow(2, -1d / 6)), 10);
+        scheduler.runTaskLater(RevivePlugin.getInstance(), () -> world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 10, (float)Math.pow(2, 1d / 12)), 20);
+        scheduler.runTaskLater(RevivePlugin.getInstance(), () -> world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 10, (float)Math.pow(2, 1d / 2)), 30);
+        scheduler.runTaskLater(RevivePlugin.getInstance(), () -> world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 10, (float)Math.pow(2, 5d / 6)), 40);
+        scheduler.runTaskLater(RevivePlugin.getInstance(), () -> {
+            world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 10, (float)Math.pow(2, 11d / 12));
+            world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 10, (float)Math.pow(2, 5d / 4));
+            world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 10, (float)Math.pow(2, 3d / 2));
+        }, 50);
+        scheduler.runTaskLater(RevivePlugin.getInstance(), () -> world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 10, (float)Math.pow(2, 2d / 3)), 70);
+        scheduler.runTaskLater(RevivePlugin.getInstance(), () -> {
+            world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 10, (float)Math.pow(2, 1d / 2));
+            world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 10, (float)Math.pow(2, 5d / 6));
+            world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 10, (float)Math.pow(2, 13d / 2));
+        }, 90);
     }
 
     public void tryRevive(Player player) {

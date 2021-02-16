@@ -6,7 +6,8 @@ import net.kunmc.lab.reviveplugin.config.parser.DoubleParser;
 import net.kunmc.lab.reviveplugin.config.parser.IntParser;
 import org.bukkit.configuration.file.FileConfiguration;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 public class ConfigManager {

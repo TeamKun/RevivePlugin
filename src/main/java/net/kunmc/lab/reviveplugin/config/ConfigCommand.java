@@ -1,7 +1,6 @@
 package net.kunmc.lab.reviveplugin.config;
 
 import net.kunmc.lab.reviveplugin.RevivePlugin;
-import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -11,9 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ConfigCommand implements CommandExecutor, TabCompleter {
     @Override

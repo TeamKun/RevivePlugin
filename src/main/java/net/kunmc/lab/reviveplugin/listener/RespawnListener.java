@@ -7,21 +7,20 @@ import com.comphenix.protocol.wrappers.EnumWrappers;
 import net.kunmc.lab.reviveplugin.DeadPlayer;
 import net.kunmc.lab.reviveplugin.RevivePlugin;
 import net.kunmc.lab.reviveplugin.config.ConfigManager;
-import net.minecraft.server.v1_15_R1.*;
+import net.minecraft.server.v1_15_R1.CombatTracker;
+import net.minecraft.server.v1_15_R1.EntityPlayer;
+import net.minecraft.server.v1_15_R1.PacketPlayOutCombatEvent;
+import net.minecraft.server.v1_15_R1.PlayerConnection;
 import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.time.Instant;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class RespawnListener extends PacketAdapter implements Listener {
     private final Map<Player, Long> unrespawnablePlayers = new HashMap<>();
@@ -69,27 +68,7 @@ public class RespawnListener extends PacketAdapter implements Listener {
 
     private void startRespawnTimer(Player player) {
         ConfigManager configManager = RevivePlugin.getInstance().getConfigManager();
-        EntityPlayer entityPlayer = ((CraftPlayer)player).getHandle();
         int respawnTime = configManager.getRespawnTime();
-        AtomicInteger counter = new AtomicInteger(respawnTime);
-        setScore(entityPlayer, counter.getAndDecrement());
         unrespawnablePlayers.put(player, Instant.now().getEpochSecond() + respawnTime);
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                int newScore = counter.getAndDecrement();
-                setScore(entityPlayer, newScore);
-                if (newScore == 0) {
-                    unrespawnablePlayers.remove(player);
-                    cancel();
-                }
-            }
-        }.runTaskTimer(RevivePlugin.getInstance(), 20, 20);
-    }
-
-    private void setScore(EntityPlayer entityPlayer, int score) {
-        DataWatcher watcher = entityPlayer.getDataWatcher();
-        entityPlayer.setScore(score);
-        entityPlayer.playerConnection.sendPacket(new PacketPlayOutEntityMetadata(entityPlayer.getId(), watcher, false));
     }
 }

@@ -11,6 +11,7 @@ import net.minecraft.server.v1_15_R1.CombatTracker;
 import net.minecraft.server.v1_15_R1.EntityPlayer;
 import net.minecraft.server.v1_15_R1.PacketPlayOutCombatEvent;
 import net.minecraft.server.v1_15_R1.PlayerConnection;
+import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -68,7 +69,8 @@ public class RespawnListener extends PacketAdapter implements Listener {
 
     private void startRespawnTimer(Player player) {
         ConfigManager configManager = RevivePlugin.getInstance().getConfigManager();
-        int respawnTime = configManager.getRespawnTime();
+        long respawnTime = configManager.getRespawnTime();
         unrespawnablePlayers.put(player, Instant.now().getEpochSecond() + respawnTime);
+        Bukkit.getScheduler().runTaskLater(RevivePlugin.getInstance(), () -> unrespawnablePlayers.remove(player), respawnTime * 20);
     }
 }

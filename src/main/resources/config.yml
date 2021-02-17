@@ -4,4 +4,5 @@ reviveCount: 15
 selfRespawn: true
 askForHelp: true
 bossBarDisplayTime: 40
-
+helpMessage: Help Me!
+helpMessageDisplayTime: 40

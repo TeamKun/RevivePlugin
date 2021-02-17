@@ -13,13 +13,15 @@ import org.bukkit.craftbukkit.v1_15_R1.CraftServer;
 import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_15_R1.entity.CraftFirework;
 import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Firework;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
+import org.bukkit.entity.Entity;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.RenderType;
+import org.bukkit.scoreboard.Scoreboard;
 
 import java.util.*;
 
@@ -37,9 +39,12 @@ public class DeadPlayer {
     private int currentReviveCount;
     private final int requireReviveCount;
     private final BossBar bossBar;
+    private final ArmorStand armorStand;
     private final Map<Player, BukkitTask> bossBarHideTaskMap = new HashMap<>();
 
     public DeadPlayer(Player source) {
+        World world = source.getWorld();
+        Location location = source.getLocation();
         ConfigManager configManager = RevivePlugin.getInstance().getConfigManager();
         this.requireReviveCount = configManager.getReviveCount();
         this.currentReviveCount = 0;
@@ -47,17 +52,21 @@ public class DeadPlayer {
         String title = source.getName() + "の蘇生";
         this.bossBar = Bukkit.createBossBar(title, BarColor.GREEN, BarStyle.SOLID);
         bossBar.setProgress(0);
+        this.armorStand = (ArmorStand)world.spawnEntity(location, EntityType.ARMOR_STAND);
+        armorStand.setVisible(false);
+        armorStand.setGravity(false);
+        armorStand.setMarker(true);
+        armorStand.setCustomName(configManager.getHelpMessage());
         this.trackers = new HashSet<>();
         for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-            if (source.getWorld().equals(onlinePlayer.getWorld())) {
+            if (world.equals(onlinePlayer.getWorld())) {
                 trackers.add(onlinePlayer);
             }
         }
         MinecraftServer server = ((CraftServer)Bukkit.getServer()).getServer();
-        WorldServer world = ((CraftWorld)source.getWorld()).getHandle();
-        Location location = source.getLocation();
+        WorldServer worldServer = ((CraftWorld)world).getHandle();
         EnumDirection direction = EnumDirection.fromAngle(source.getLocation().getYaw());
-        this.deadPlayer = new EntityPlayer(server, world, new GameProfile(source.getUniqueId(), source.getName()), new PlayerInteractManager(world));
+        this.deadPlayer = new EntityPlayer(server, worldServer, new GameProfile(source.getUniqueId(), source.getName()), new PlayerInteractManager(worldServer));
         this.deadPlayer.setLocation(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
         this.bedLocation = new Location(location.getWorld(), location.getX(), 1, location.getZ());
         this.blockDataCache = bedLocation.getBlock().getBlockData();
@@ -181,6 +190,10 @@ public class DeadPlayer {
     }
 
     public void askForHelp() {
+        armorStand.setCustomNameVisible(true);
+        ConfigManager configManager = RevivePlugin.getInstance().getConfigManager();
+        int helpMessageDisplayTime = configManager.getHelpMessageDisplayTime();
+        Bukkit.getScheduler().runTaskLater(RevivePlugin.getInstance(), () -> armorStand.setCustomNameVisible(false), helpMessageDisplayTime);
     }
 
     private void spawnToPlayer(Player player) {

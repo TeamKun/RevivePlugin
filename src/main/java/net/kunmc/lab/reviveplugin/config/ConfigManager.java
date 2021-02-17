@@ -4,6 +4,7 @@ import net.kunmc.lab.reviveplugin.RevivePlugin;
 import net.kunmc.lab.reviveplugin.config.parser.BooleanParser;
 import net.kunmc.lab.reviveplugin.config.parser.DoubleParser;
 import net.kunmc.lab.reviveplugin.config.parser.IntParser;
+import net.kunmc.lab.reviveplugin.config.parser.StringParser;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.HashMap;
@@ -17,8 +18,10 @@ public class ConfigManager {
         put("reviveDistance", new DoubleParser(0, 10));
         put("reviveCount", new IntParser(1, Integer.MAX_VALUE));
         put("selfRespawn", new BooleanParser());
-        put("askForHelp", new BooleanParser());
         put("bossBarDisplayTime", new IntParser(1, Integer.MAX_VALUE));
+        put("askForHelp", new BooleanParser());
+        put("helpMessage", new StringParser());
+        put("helpMessageDisplayTime", new IntParser(1, Integer.MAX_VALUE));
     }};
 
     public static String[] getConfigPaths() {
@@ -70,5 +73,13 @@ public class ConfigManager {
 
     public int getBossBarDisplayTime() {
         return config.getInt("bossBarDisplayTime");
+    }
+
+    public String getHelpMessage() {
+        return config.getString("helpMessage");
+    }
+
+    public int getHelpMessageDisplayTime() {
+        return config.getInt("helpMessageDisplayTime");
     }
 }

@@ -52,7 +52,8 @@ public class DeadPlayer {
         String title = source.getName() + "の蘇生";
         this.bossBar = Bukkit.createBossBar(title, BarColor.GREEN, BarStyle.SOLID);
         bossBar.setProgress(0);
-        this.armorStand = (ArmorStand)world.spawnEntity(location, EntityType.ARMOR_STAND);
+        Location armorStandLocation = location.clone().add(0, 0.5, 0);
+        this.armorStand = (ArmorStand)world.spawnEntity(armorStandLocation, EntityType.ARMOR_STAND);
         armorStand.setVisible(false);
         armorStand.setGravity(false);
         armorStand.setMarker(true);

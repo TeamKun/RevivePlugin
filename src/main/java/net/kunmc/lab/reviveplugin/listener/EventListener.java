@@ -35,8 +35,10 @@ public class EventListener implements Listener {
         Player player = event.getPlayer();
         DeadPlayer deadPlayer = DeadPlayer.getDeadPlayers().get(player);
         Location location = deadPlayer.getLocation();
-        event.setRespawnLocation(location);
-        deadPlayer.playReviveEffect(location);
+        if (!deadPlayer.isSelfRespawned()) {
+            event.setRespawnLocation(location);
+            deadPlayer.playReviveEffect(location);
+        }
         deadPlayer.remove();
     }
 

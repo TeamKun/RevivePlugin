@@ -41,6 +41,7 @@ public class DeadPlayer {
     private final BossBar bossBar;
     private final ArmorStand armorStand;
     private final Map<Player, BukkitTask> bossBarHideTaskMap = new HashMap<>();
+    private boolean isSelfRespawned;
 
     public DeadPlayer(Player source) {
         World world = source.getWorld();
@@ -49,6 +50,7 @@ public class DeadPlayer {
         this.requireReviveCount = configManager.getReviveCount();
         this.currentReviveCount = 0;
         this.source = source;
+        this.isSelfRespawned = true;
         String title = source.getName() + "の蘇生";
         this.bossBar = Bukkit.createBossBar(title, BarColor.GREEN, BarStyle.SOLID);
         bossBar.setProgress(0);
@@ -168,7 +170,12 @@ public class DeadPlayer {
         bossBar.setProgress((double)currentReviveCount / requireReviveCount);
         if (currentReviveCount >= requireReviveCount) {
             source.spigot().respawn();
+            isSelfRespawned = false;
         }
+    }
+
+    public boolean isSelfRespawned() {
+        return isSelfRespawned;
     }
 
     private void updateBossBar(Player player) {

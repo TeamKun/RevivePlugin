@@ -131,6 +131,8 @@ public class DeadPlayer {
             entry.getValue().cancel();
         }
         bossBarHideTaskMap.clear();
+        armorStand.remove();
+        bossBar.removeAll();
     }
 
     public Location getLocation() {
@@ -201,10 +203,19 @@ public class DeadPlayer {
     }
 
     public void askForHelp() {
+        RevivePlugin instance = RevivePlugin.getInstance();
+        Bukkit.getScheduler().runTask(instance, () -> {
+            World world = source.getWorld();
+            Location location = source.getLocation();
+            Firework firework = (Firework)world.spawnEntity(location, EntityType.FIREWORK);
+            FireworkMeta meta = firework.getFireworkMeta();
+            meta.setPower(1);
+            firework.setFireworkMeta(meta);
+        });
         armorStand.setCustomNameVisible(true);
-        ConfigManager configManager = RevivePlugin.getInstance().getConfigManager();
+        ConfigManager configManager = instance.getConfigManager();
         int helpMessageDisplayTime = configManager.getHelpMessageDisplayTime();
-        Bukkit.getScheduler().runTaskLater(RevivePlugin.getInstance(), () -> armorStand.setCustomNameVisible(false), helpMessageDisplayTime);
+        Bukkit.getScheduler().runTaskLater(instance, () -> armorStand.setCustomNameVisible(false), helpMessageDisplayTime);
     }
 
     private void spawnToPlayer(Player player) {

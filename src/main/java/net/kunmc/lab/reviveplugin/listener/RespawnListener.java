@@ -32,28 +32,34 @@ public class RespawnListener extends PacketAdapter implements Listener {
 
     @Override
     public void onPacketReceiving(PacketEvent event) {
-        Player eventPlayer = event.getPlayer();
         EnumWrappers.ClientCommand clientCommand = event.getPacket().getClientCommands().read(0);
-        ConfigManager configManager = RevivePlugin.getInstance().getConfigManager();
+        if (clientCommand != EnumWrappers.ClientCommand.PERFORM_RESPAWN) {
+            return;
+        }
+        Player eventPlayer = event.getPlayer();
         if (!unrespawnablePlayers.containsKey(eventPlayer)) {
             return;
         }
+        ConfigManager configManager = RevivePlugin.getInstance().getConfigManager();
+        boolean canSelfRespawn = configManager.canSelfRespawn();
         long epoch = unrespawnablePlayers.get(eventPlayer);
-        long remainingTime = Math.max(0, epoch - Instant.now().getEpochSecond());
-        if (clientCommand == EnumWrappers.ClientCommand.PERFORM_RESPAWN) {
-            EntityPlayer player = ((CraftPlayer)eventPlayer).getHandle();
-            DeadPlayer deadPlayer = DeadPlayer.getDeadPlayers().get(eventPlayer);
-            PlayerConnection connection = player.playerConnection;
-            event.setCancelled(true);
-            connection.sendPacket(new PacketPlayOutCombatEvent(new CombatTracker(player), PacketPlayOutCombatEvent.EnumCombatEventType.ENTITY_DIED));
-            if (configManager.canSelfRespawn()) {
-                eventPlayer.sendMessage("リスポーン可能まであと" + remainingTime + "秒");
-                if (configManager.canAskForHelp()) {
-                    deadPlayer.askForHelp();
-                }
-            } else {
-                eventPlayer.sendMessage("リスポーンはできません");
-            }
+        long remainingTime = epoch - Instant.now().getEpochSecond();
+        if (canSelfRespawn && remainingTime < 0) {
+            unrespawnablePlayers.remove(eventPlayer);
+            return;
+        }
+        EntityPlayer player = ((CraftPlayer)eventPlayer).getHandle();
+        DeadPlayer deadPlayer = DeadPlayer.getDeadPlayers().get(eventPlayer);
+        event.setCancelled(true);
+        PlayerConnection connection = player.playerConnection;
+        connection.sendPacket(new PacketPlayOutCombatEvent(new CombatTracker(player), PacketPlayOutCombatEvent.EnumCombatEventType.ENTITY_DIED));
+        if (canSelfRespawn) {
+            eventPlayer.sendMessage("リスポーン可能まであと" + remainingTime + "秒");
+        } else {
+            eventPlayer.sendMessage("リスポーンはできません");
+        }
+        if (configManager.canAskForHelp()) {
+            deadPlayer.askForHelp();
         }
     }
 
@@ -75,6 +81,5 @@ public class RespawnListener extends PacketAdapter implements Listener {
         ConfigManager configManager = RevivePlugin.getInstance().getConfigManager();
         long respawnTime = configManager.getRespawnTime();
         unrespawnablePlayers.put(player, Instant.now().getEpochSecond() + respawnTime);
-        Bukkit.getScheduler().runTaskLater(RevivePlugin.getInstance(), () -> unrespawnablePlayers.remove(player), respawnTime * 20);
     }
 }

@@ -7,11 +7,16 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 public class EventListener implements Listener {
     @EventHandler
@@ -40,6 +45,14 @@ public class EventListener implements Listener {
             deadPlayer.playReviveEffect(location);
         }
         deadPlayer.remove();
+    }
+
+    @EventHandler
+    public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+        UUID uuid = event.getDamager().getUniqueId();
+        if (DeadPlayer.getFireworks().contains(uuid)) {
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler

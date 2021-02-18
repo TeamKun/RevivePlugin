@@ -27,6 +27,7 @@ import java.util.*;
 
 public class DeadPlayer {
     private static final Map<Player, DeadPlayer> deadPlayers = new HashMap<>();
+    private static final Set<UUID> fireworks = new HashSet<>();
     private static BukkitTask task;
     private final Player source;
     private final EntityPlayer deadPlayer;
@@ -140,24 +141,26 @@ public class DeadPlayer {
     public void playReviveEffect(Location location) {
         World world = location.getWorld();
         BukkitScheduler scheduler = Bukkit.getScheduler();
-        scheduler.runTaskLater(RevivePlugin.getInstance(), () -> {
+        RevivePlugin instance = RevivePlugin.getInstance();
+        scheduler.runTask(instance, () -> {
             Firework firework = (Firework)world.spawnEntity(location, EntityType.FIREWORK);
             FireworkMeta meta = firework.getFireworkMeta();
             meta.addEffect(FireworkEffect.builder().with(FireworkEffect.Type.BURST).withColor(Color.WHITE).build());
             firework.setFireworkMeta(meta);
             ((CraftFirework)firework).getHandle().expectedLifespan = 1;
-        }, 0);
-        scheduler.runTaskLater(RevivePlugin.getInstance(), () -> world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 10, (float)Math.pow(2, -1d / 6)), 10);
-        scheduler.runTaskLater(RevivePlugin.getInstance(), () -> world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 10, (float)Math.pow(2, 1d / 12)), 20);
-        scheduler.runTaskLater(RevivePlugin.getInstance(), () -> world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 10, (float)Math.pow(2, 1d / 2)), 30);
-        scheduler.runTaskLater(RevivePlugin.getInstance(), () -> world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 10, (float)Math.pow(2, 5d / 6)), 40);
-        scheduler.runTaskLater(RevivePlugin.getInstance(), () -> {
+            getFireworks().add(firework.getUniqueId());
+        });
+        scheduler.runTaskLater(instance, () -> world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 10, (float)Math.pow(2, -1d / 6)), 10);
+        scheduler.runTaskLater(instance, () -> world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 10, (float)Math.pow(2, 1d / 12)), 20);
+        scheduler.runTaskLater(instance, () -> world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 10, (float)Math.pow(2, 1d / 2)), 30);
+        scheduler.runTaskLater(instance, () -> world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 10, (float)Math.pow(2, 5d / 6)), 40);
+        scheduler.runTaskLater(instance, () -> {
             world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 10, (float)Math.pow(2, 11d / 12));
             world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 10, (float)Math.pow(2, 5d / 4));
             world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 10, (float)Math.pow(2, 3d / 2));
         }, 50);
-        scheduler.runTaskLater(RevivePlugin.getInstance(), () -> world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 10, (float)Math.pow(2, 2d / 3)), 70);
-        scheduler.runTaskLater(RevivePlugin.getInstance(), () -> {
+        scheduler.runTaskLater(instance, () -> world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 10, (float)Math.pow(2, 2d / 3)), 70);
+        scheduler.runTaskLater(instance, () -> {
             world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 10, (float)Math.pow(2, 1d / 2));
             world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 10, (float)Math.pow(2, 5d / 6));
             world.playSound(location, Sound.BLOCK_NOTE_BLOCK_CHIME, 10, (float)Math.pow(2, 13d / 2));
@@ -169,8 +172,8 @@ public class DeadPlayer {
         currentReviveCount++;
         bossBar.setProgress((double)currentReviveCount / requireReviveCount);
         if (currentReviveCount >= requireReviveCount) {
-            source.spigot().respawn();
             isSelfRespawned = false;
+            source.spigot().respawn();
         }
     }
 
@@ -243,5 +246,9 @@ public class DeadPlayer {
 
     public static Map<Player, DeadPlayer> getDeadPlayers() {
         return deadPlayers;
+    }
+
+    public static Set<UUID> getFireworks() {
+        return fireworks;
     }
 }

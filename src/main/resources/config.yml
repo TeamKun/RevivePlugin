@@ -1,6 +1,6 @@
-respawnTime: 5
+respawnTime: 10
 reviveDistance: 2
-reviveCount: 15
+reviveCount: 20
 selfRespawn: true
 askForHelp: true
 bossBarDisplayTime: 40
